@@ -1,0 +1,63 @@
+#!/usr/bin/env fish
+
+set -l source "http://capp.itec.kit.edu/teaching/rs/?lang=d&sem=ss16"
+set -l root (pwd)
+
+### START NEWLINE ENABLED AREA
+set -l IFSdefault IFS #backup line break variable
+set -l IFS # set empty, disable newline replacement/splitting
+
+# get PDF URLs, one in each line
+set urls (curl -s $source \
+	| sed -n 's/.*href="\([^"]*\).*/\1/p' \
+	| grep .pdf \
+	| sed "s/^.\//http:\/\/capp.itec.kit.edu\/teaching\/rs\//" \
+	| sort -u)
+
+set -l IFS IFSdefault # reenable line break splitting
+### END NEWLINE ENABLED AREA
+
+# get categories of PDFs
+set klausuren (echo $urls | grep kl\/)
+set folien (echo $urls | grep vl\/)
+
+set dirKlausuren $root/Klausuren
+set dirFolien $root/Folien
+
+# DEBUG FOO
+#echo -e "URLs: " $urls
+#echo -e "klausuren: " $klausuren
+#echo -e "folien: " $folien
+#echo -e "dirKlausuren: " $dirKlausuren
+#echo -e "dirFolien: " $dirFolien
+# END DEBUG FOO
+
+# Create folders if necessary for categories
+if not [ -d $dirKlausuren ]
+	mkdir $dirKlausuren
+end
+
+if not [ -d $dirFolien ]
+	mkdir $dirFolien
+end
+
+
+# wGet the stuff
+cd $dirFolien
+for f in $folien
+	wget --user=rs --password=rechner.strukturen $f \
+		-O $dirFolien/(basename $f)
+end
+
+if [ $1 = klausuren ]
+	cd $dirKlausuren
+	for f in $klausuren
+		set year (echo $f | sed "s/.*rs\///" | sed "s/\/kl\/.*//")
+		if not [ -d $dirKlausuren/$year ]
+			mkdir $dirKlausuren/$year
+		end
+		wget --user=rs --password=rechner.strukturen $f \
+			-O $dirKlausuren/$year/(basename $f)
+	end
+end
+cd $root

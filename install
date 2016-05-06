@@ -1,0 +1,26 @@
+#!/usr/bin/env fish
+
+set -l target ~/.local/bin #you may adjust this
+set -l root (dirname (status -f)) #but better don't touch this.
+
+if not [ -d $target ]
+	echo "$target not existent, creating it ..."
+	mkdir -d $target
+end
+
+echo "Linking scripts into $target ..."
+for script in $root/KIT*
+	set -l name (basename $script)
+	echo \t"ln -s $script $target/$name"
+	ln -sf $script $target/$name
+end
+
+echo "If no error occured, you did it! Just one more step."
+echo "You need to add $target to your PATH variable."
+echo "Using bash, you can use:"
+echo \t"echo \"PATH=$target:PATH\" >> ~/.bashrc"
+echo "Using fish, you can use:"
+echo \t"echo \"set PATH $target PATH\" >> ~/.config/fish/config.fish"
+echo "To uninstall, run:"
+echo \t"rm $target/KIT-*"
+echo "But be dangerous with the last command."

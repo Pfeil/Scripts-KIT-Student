@@ -1,0 +1,72 @@
+#!/usr/bin/env fish
+
+set -l source "http://liinwww.ira.uka.de/~thw/vl-alg-za/index.html"
+set -l root (pwd)
+
+### START NEWLINE ENABLED AREA
+set -l IFSdefault IFS #backup line break variable
+set -l IFS # set empty, disable newline replacement/splitting
+
+# get PDF URLs, one in each line
+set urls (curl -s $source \
+	| grep http \
+	| sed 's/http/\nhttp/g' \
+	| grep \nhttp \
+	| sed 's/\(^http[^ <]*\)\(.*\)/\1/g' \
+	| sed "s/\".*//" \
+	| grep .pdf \
+	| sort -u)
+
+set -l IFS IFSdefault # reenable line break splitting
+### END NEWLINE ENABLED AREA
+
+# get categories of PDFs
+set aufgaben (echo $urls | grep aufgaben)
+set folien (echo $urls | grep folien)
+set skript (echo $urls | grep skript)
+
+set dirAufgaben $root/Aufgaben
+set dirFolien $root/Folien
+set dirSkript $root/Skript
+
+# DEBUG FOO
+echo -e "URLs: " $urls
+
+echo -e "Aufgaben: " $aufgaben
+echo -e "folien: " $folien
+echo -e "skript: " $skript
+
+echo -e "dirAufgaben: " $dirAufgaben
+echo -e "dirFolien: " $dirFolien
+echo -e "dirSkript: " $dirSkript
+# END DEBUG FOO
+
+# Create folders if necessary for categories
+if not [ -d $dirAufgaben ]
+    mkdir $dirAufgaben
+end
+
+if not [ -d $dirFolien ]
+    mkdir $dirFolien
+end
+
+if not [ -d $dirSkript ]
+    mkdir $dirSkript
+end
+
+# wGet the stuff
+cd $dirAufgaben
+for f in $aufgaben
+    wget $f -O $dirAufgaben/(basename $f)
+end
+
+cd $dirFolien
+for f in $folien
+    wget $f -O $dirFolien/(basename $f)
+end
+
+cd $dirSkript
+for f in $skript
+    wget $f -O $dirSkript/(basename $f)
+end
+cd $root
