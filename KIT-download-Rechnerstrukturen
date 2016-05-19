@@ -2,6 +2,7 @@
 
 set -l source "http://capp.itec.kit.edu/teaching/rs/?lang=d&sem=ss16"
 set -l root (pwd)
+set -l semester SS(date +%g)
 
 ### START NEWLINE ENABLED AREA
 set -l IFSdefault IFS #backup line break variable
@@ -22,7 +23,7 @@ set klausuren (echo $urls | grep kl\/)
 set folien (echo $urls | grep vl\/)
 
 set dirKlausuren $root/Klausuren
-set dirFolien $root/Folien
+set dirFolien $root/$semester/Vorlesung
 
 # DEBUG FOO
 #echo -e "URLs: " $urls
